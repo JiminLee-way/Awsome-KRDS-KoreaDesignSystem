@@ -195,6 +195,212 @@ html/code/carousel_banner.html
 6. 모바일에서는 스와이프 제스처를 지원한다.
 7. KWCAG 2.2 / WCAG 2.1 준수: 2.2.2 Pause, Stop, Hide
 
+### 추천 패턴: 뉴스/주요소식 Fade 슬라이드쇼
+
+텍스트 좌측 + 이미지 우측 분리 레이아웃에 fade 전환 효과를 적용하는 패턴.
+공공기관 메인 화면의 주요소식 영역에 적합하다.
+
+**핵심 특징:**
+- `swiper-fade` 효과: 슬라이드가 겹쳐서 opacity로 전환 (좌우 이동이 아님)
+- 텍스트와 이미지가 분리된 레이아웃 (좌: 제목+본문+링크, 우: 배경이미지)
+- 이미지는 `<img>` 태그 대신 `background-image`로 처리하여 비율 유지
+
+**HTML 구조:**
+```html
+<section class="main-sect news">
+  <div class="inner">
+    <h2 class="sr-only">주요소식</h2>
+
+    <!-- Swiper: fade 효과 사용 -->
+    <div class="news-swiper swiper-container swiper-fade">
+      <ul class="news-list swiper-wrapper" aria-live="off">
+
+        <!-- 슬라이드 1 -->
+        <li class="news-item swiper-slide" role="group" aria-label="1 / 5">
+          <div class="news-text">
+            <p class="text-title">슬라이드 제목</p>
+            <p class="text-cont">슬라이드 본문 설명 텍스트.
+두 줄까지 표시 가능합니다.</p>
+          </div>
+          <div class="news-img" style="background-image: url('/path/to/image.png');">
+            <span class="sr-only">이미지 설명</span>
+          </div>
+          <a href="/detail" class="news-more">자세히 보러가기</a>
+        </li>
+
+        <!-- 슬라이드 2 -->
+        <li class="news-item swiper-slide" role="group" aria-label="2 / 5">
+          <div class="news-text">
+            <p class="text-title">두 번째 슬라이드 제목</p>
+            <p class="text-cont">두 번째 슬라이드 설명</p>
+          </div>
+          <div class="news-img" style="background-image: url('/path/to/image2.png');">
+            <span class="sr-only">이미지 설명</span>
+          </div>
+          <a href="/detail2" class="news-more">자세히 보러가기</a>
+        </li>
+
+        <!-- 슬라이드 3~5 동일 구조 -->
+
+      </ul>
+      <span class="swiper-notification" aria-live="assertive" aria-atomic="true"></span>
+    </div>
+
+    <!-- 인디케이터 (슬라이더 외부에 배치) -->
+    <div class="swiper-indicator">
+      <div class="swiper-pagination"></div>
+      <div class="swiper-controller">
+        <button type="button" class="swiper-button-play" style="display: none;">
+          <span class="sr-only">주요소식 슬라이드 재생</span>
+        </button>
+        <button type="button" class="swiper-button-stop">
+          <span class="sr-only">주요소식 슬라이드 멈춤</span>
+        </button>
+      </div>
+      <div class="swiper-navigation">
+        <button type="button" class="swiper-button-prev" aria-label="Previous slide">
+          <span class="sr-only">이전 주요소식으로 이동</span>
+        </button>
+        <button type="button" class="swiper-button-next" aria-label="Next slide">
+          <span class="sr-only">다음 주요소식으로 이동</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+```
+
+**CSS (KRDS 토큰 기반):**
+```css
+.main-sect.news {
+  position: relative;
+  overflow: hidden;
+}
+
+.main-sect.news .inner {
+  max-width: 1200px;      /* KRDS 최대 콘텐츠 너비 */
+  margin: 0 auto;
+  padding: 0 var(--krds-padding-8); /* 24px */
+}
+
+.news-item {
+  display: flex;
+  align-items: center;
+  gap: var(--krds-gap-10); /* 48px */
+  min-height: 400px;
+}
+
+/* 텍스트 영역 (좌측) */
+.news-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.news-text .text-title {
+  font-size: var(--krds-pc-font-size-heading-large); /* 3.2rem (32px) */
+  font-weight: 700;
+  line-height: 150%;
+  color: var(--krds-color-light-gray-90);
+  margin-bottom: var(--krds-gap-5); /* 16px */
+}
+
+.news-text .text-cont {
+  font-size: var(--krds-pc-font-size-body-large); /* 1.9rem (19px) */
+  font-weight: 400;
+  line-height: 150%;
+  color: var(--krds-color-light-gray-60);
+  white-space: pre-wrap;     /* 줄바꿈 유지 */
+  margin-bottom: var(--krds-gap-7); /* 24px */
+}
+
+.news-more {
+  display: inline-flex;
+  align-items: center;
+  font-size: var(--krds-pc-font-size-body-medium); /* 1.7rem */
+  color: var(--krds-color-light-primary-50);
+  text-decoration: underline;
+}
+
+/* 이미지 영역 (우측) */
+.news-img {
+  flex: 0 0 480px;
+  height: 360px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  border-radius: var(--krds-radius-xlarge); /* 12px */
+}
+
+/* 반응형: 모바일에서 세로 배치 */
+@media (max-width: 767px) {
+  .news-item {
+    flex-direction: column-reverse; /* 이미지 위, 텍스트 아래 */
+    gap: var(--krds-gap-7); /* 24px */
+    min-height: auto;
+  }
+
+  .news-img {
+    flex: none;
+    width: 100%;
+    height: 200px;
+  }
+
+  .news-text .text-title {
+    font-size: var(--krds-mobile-font-size-heading-large); /* 2.4rem */
+  }
+}
+```
+
+**JS 초기화 (fade 효과 + autoplay):**
+```javascript
+const newsSwiper = new Swiper('.news-swiper', {
+  effect: 'fade',             // 핵심: fade 전환 효과
+  fadeEffect: { crossFade: true },
+  slidesPerView: 1,
+  loop: true,
+  speed: 400,
+  watchSlidesProgress: true,
+  autoplay: {
+    delay: 4000,              // 4초 (최소 5초 권장이나 뉴스 특성상 4초)
+    disableOnInteraction: false,
+    pauseOnMouseEnter: true,
+  },
+  pagination: {
+    el: '.swiper-pagination',
+    clickable: true,
+  },
+  navigation: {
+    nextEl: '.swiper-button-next',
+    prevEl: '.swiper-button-prev',
+  },
+});
+
+// 재생/멈춤 토글
+const $play = document.querySelector('.swiper-button-play');
+const $stop = document.querySelector('.swiper-button-stop');
+$play.style.display = 'none';
+
+$play.addEventListener('click', () => {
+  newsSwiper.autoplay.start();
+  $stop.style.display = '';
+  $play.style.display = 'none';
+});
+
+$stop.addEventListener('click', () => {
+  newsSwiper.autoplay.stop();
+  $stop.style.display = 'none';
+  $play.style.display = '';
+});
+```
+
+**주의사항:**
+- `effect: 'fade'`를 사용하려면 반드시 `swiper-bundle.min.css`와 `.js`를 로드해야 함
+- 이미지는 `<img>` 대신 `background-image`로 처리해야 fade 전환 시 깜빡임이 없음
+- `background-size: contain`으로 이미지 비율을 유지 (이미지가 잘리지 않음)
+- 슬라이드 내부에 `<a class="news-more">`를 넣어 각 슬라이드별 링크 제공
+- `aria-live="off"`를 wrapper에 설정하여 자동 재생 중 스크린 리더가 매번 읽지 않도록 함
+- `role="group"` + `aria-label="1 / N"`으로 현재 슬라이드 위치 접근성 제공
+
 ---
 
 ## 달력 (Calendar)
