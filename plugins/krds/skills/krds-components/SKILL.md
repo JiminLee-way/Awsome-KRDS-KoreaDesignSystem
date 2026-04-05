@@ -200,6 +200,129 @@ Read resources/js/component/ui-script.js
 
 ---
 
+## Known Issues & Pitfalls
+
+### 1. 캐러셀/슬라이더 인디케이터 구현 주의
+
+캐러셀(carousel) 컴포넌트의 재생/멈춤 버튼, 이전/다음 버튼, 페이지네이션 인디케이터를 구현할 때 **반드시 다음을 준수하세요:**
+
+**필수 의존성:**
+```html
+<!-- 반드시 이 두 파일을 페이지에 추가 -->
+<link rel="stylesheet" href="node_modules/krds-uiux/resources/css/plugin/swiper-bundle.min.css">
+<script src="node_modules/krds-uiux/resources/js/plugin/swiper-bundle.min.js"></script>
+```
+
+**절대 하지 마세요:**
+- 재생/멈춤 버튼에 텍스트 문자(▶, ▮▮, <, >) 를 직접 넣지 마세요. KRDS는 CSS로 아이콘을 표현합니다
+- `swiper-button-play`, `swiper-button-stop`, `swiper-button-prev`, `swiper-button-next` 클래스의 아이콘은 **krds CSS가 자동으로 렌더링**합니다
+- 버튼 내부에는 `<span class="sr-only">` 접근성 텍스트만 넣으세요
+
+**올바른 구현 (carousel_banner.html 기준):**
+```html
+<div class="swiper-indicator">
+  <div class="swiper-pagination"></div>
+  <div class="swiper-controller">
+    <button type="button" class="swiper-button-play">
+      <span class="sr-only">슬라이드 재생</span>
+    </button>
+    <button type="button" class="swiper-button-stop">
+      <span class="sr-only">슬라이드 멈춤</span>
+    </button>
+  </div>
+  <div class="swiper-navigation">
+    <button type="button" class="swiper-button-prev">
+      <span class="sr-only">이전</span>
+    </button>
+    <button type="button" class="swiper-button-next">
+      <span class="sr-only">다음</span>
+    </button>
+  </div>
+</div>
+```
+
+**잘못된 구현 (이렇게 하면 아이콘이 깨집니다):**
+```html
+<!-- ❌ 텍스트 문자로 아이콘을 대체하면 안 됩니다 -->
+<button class="swiper-button-play">▶</button>
+<button class="swiper-button-stop">▮▮</button>
+<button class="swiper-button-prev">&lt;</button>
+<button class="swiper-button-next">&gt;</button>
+```
+
+**JS 초기화 (autoplay + 재생/멈춤):**
+```javascript
+const swiper = new Swiper(".swiper-container .swiper", {
+  slidesPerView: 1,
+  loop: true,
+  autoplay: { delay: 2500, disableOnInteraction: false, pauseOnMouseEnter: true },
+  navigation: { nextEl: ".swiper-button-next", prevEl: ".swiper-button-prev" },
+  pagination: { el: ".swiper-pagination", type: "fraction" },
+});
+
+const $play = document.querySelector(".swiper-button-play");
+const $stop = document.querySelector(".swiper-button-stop");
+$play.style.display = "none";
+
+$play.addEventListener("click", () => {
+  swiper.autoplay.start();
+  $stop.style.display = "";
+  $play.style.display = "none";
+});
+$stop.addEventListener("click", () => {
+  swiper.autoplay.stop();
+  $stop.style.display = "none";
+  $play.style.display = "";
+});
+```
+
+### 2. 헤더 로고 겹침 문제
+
+사용자가 자체 서비스 로고를 사용하는 경우, KRDS 기본 로고와 겹치는 문제가 발생합니다.
+
+**원인:** KRDS 헤더의 `.logo` 클래스는 CSS `background-image`로 KRDS 기본 로고를 표시합니다. 사용자가 `<img>` 태그나 다른 방식으로 로고를 추가하면 두 개가 겹칩니다.
+
+**해결 방법 — 기관 유형별 분기:**
+
+**중앙행정기관 (대표) — 정부 상징 로고 사용:**
+```html
+<!-- 정부 상징 로고를 사용하므로 KRDS 기본 로고를 그대로 유지 -->
+<h2 class="logo">
+  <a href="/">
+    <span class="sr-only">기관명 - Korea Design System</span>
+  </a>
+</h2>
+```
+CSS의 background-image가 정부 상징 로고를 표시합니다. `<img>` 태그를 추가하지 마세요.
+
+**중앙행정기관 (운영), 공공기관, 지자체 — 자체 로고 사용:**
+```html
+<!-- 자체 로고를 사용할 때는 background-image를 제거하고 img 태그 사용 -->
+<h2 class="logo">
+  <a href="/">
+    <img src="/path/to/custom-logo.svg" alt="서비스명">
+  </a>
+</h2>
+```
+```css
+/* 반드시 KRDS 기본 로고 background를 제거 */
+#krds-header .logo a {
+  background-image: none;
+}
+```
+
+**절대 하지 마세요:**
+- KRDS CSS의 `.logo a` background-image를 제거하지 않고 `<img>` 태그를 추가 → 로고 겹침
+- `<img>` 태그 없이 background-image만 변경 → alt 텍스트 누락으로 접근성 위반
+- 로고 영역의 크기/위치를 임의로 변경 → 헤더 레이아웃 깨짐
+
+**올바른 패턴:**
+1. 정부 상징 → KRDS 기본 CSS background 유지, `<span class="sr-only">`로 기관명 제공
+2. 자체 로고 → `background-image: none` 적용 후 `<img alt="서비스명">` 삽입
+3. 두 로고(상위기관 + 서비스)가 필요한 경우 → 운영기관 식별자(Identifier) 컴포넌트를 푸터에 배치하여 상위기관 로고 표시
+
+---
+
 ## 레퍼런스 파일
 
 각 컴포넌트 카테고리별 상세 가이드라인은 다음 레퍼런스 파일을 참조한다:
