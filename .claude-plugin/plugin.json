@@ -1,0 +1,11 @@
+{
+  "name": "krds",
+  "version": "1.0.0",
+  "description": "KRDS (Korea Design System) - 대한민국 범정부 UI/UX 디자인시스템 가이드. 스타일, 컴포넌트, 패턴, 검증, 저작권 관리.",
+  "author": {
+    "name": "JiminLee-way"
+  },
+  "repository": "https://github.com/JiminLee-way/Awsome-KRDS-KoreaDesignSystem-",
+  "license": "공공누리 제1유형",
+  "keywords": ["krds", "korea", "government", "design-system", "ui", "ux", "accessibility", "wcag", "공공누리"]
+}
