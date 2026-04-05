@@ -401,6 +401,278 @@ $stop.addEventListener('click', () => {
 - `aria-live="off"`를 wrapper에 설정하여 자동 재생 중 스크린 리더가 매번 읽지 않도록 함
 - `role="group"` + `aria-label="1 / N"`으로 현재 슬라이드 위치 접근성 제공
 
+### 추천 패턴: Peek 슬라이드쇼 (다음 슬라이드 미리보기)
+
+공정위 메인 페이지처럼 **현재 슬라이드 우측에 다음 슬라이드가 살짝 보이는** 효과.
+시각적으로 "더 많은 콘텐츠가 있다"는 것을 암시하여 스와이프/클릭을 유도한다.
+
+**핵심:** Swiper의 `slidesPerView`를 1보다 크게 설정하여 다음 슬라이드 일부를 노출.
+
+**HTML 구조 (Fade 슬라이드쇼와 동일, 래퍼만 다름):**
+```html
+<section class="main-sect news">
+  <div class="inner">
+    <h2 class="sr-only">주요소식</h2>
+
+    <div class="news-layout">
+      <!-- 좌측: 텍스트 (현재 슬라이드 정보) -->
+      <div class="news-text-area">
+        <p class="text-title" id="news-title">슬라이드 제목</p>
+        <p class="text-cont" id="news-cont">슬라이드 본문 설명</p>
+        <a href="#" class="krds-btn primary" id="news-link">자세히 보러가기</a>
+      </div>
+
+      <!-- 우측: 이미지 슬라이더 (peek 효과) -->
+      <div class="news-swiper-peek">
+        <div class="swiper">
+          <ul class="swiper-wrapper" aria-live="off">
+            <li class="swiper-slide" role="group" aria-label="1 / 5"
+                data-title="중동 상황 및 민생품목 관련 위법행위 신고센터 운영"
+                data-cont="중동 상황 및 민생 밀접 품목 관련 담합, 출고조절 및 불공정거래행위 등을 공정위에 신고할 수 있습니다."
+                data-link="/detail/1">
+              <div class="slide-img" style="background-image: url('/img/news1.png');"></div>
+            </li>
+            <li class="swiper-slide" role="group" aria-label="2 / 5"
+                data-title="두 번째 슬라이드 제목"
+                data-cont="두 번째 슬라이드 설명"
+                data-link="/detail/2">
+              <div class="slide-img" style="background-image: url('/img/news2.png');"></div>
+            </li>
+            <!-- 3~5 반복 -->
+          </ul>
+        </div>
+
+        <!-- 인디케이터 (이미지 영역 하단) -->
+        <div class="swiper-indicator">
+          <div class="swiper-pagination"></div>
+          <div class="swiper-controller">
+            <button type="button" class="swiper-button-play" style="display: none;">
+              <span class="sr-only">주요소식 슬라이드 재생</span>
+            </button>
+            <button type="button" class="swiper-button-stop">
+              <span class="sr-only">주요소식 슬라이드 멈춤</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 이전/다음 (레이아웃 우측 끝) -->
+      <div class="swiper-navigation">
+        <button type="button" class="swiper-button-prev" aria-label="Previous slide">
+          <span class="sr-only">이전 주요소식</span>
+        </button>
+        <button type="button" class="swiper-button-next" aria-label="Next slide">
+          <span class="sr-only">다음 주요소식</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+```
+
+**CSS:**
+```css
+/* 전체 레이아웃: 텍스트 좌 + 슬라이더 우 + 화살표 */
+.news-layout {
+  display: flex;
+  align-items: center;
+  gap: var(--krds-gap-10); /* 48px */
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--krds-padding-8); /* 24px */
+  min-height: 406px;
+}
+
+/* 좌측 텍스트 */
+.news-text-area {
+  flex: 0 0 380px;
+}
+
+.news-text-area .text-title {
+  font-size: var(--krds-pc-font-size-heading-large); /* 32px */
+  font-weight: 700;
+  line-height: 150%;
+  color: var(--krds-color-light-gray-90);
+  margin-bottom: var(--krds-gap-5); /* 16px */
+  word-break: keep-all;
+}
+
+.news-text-area .text-cont {
+  font-size: var(--krds-pc-font-size-body-large); /* 19px */
+  line-height: 150%;
+  color: var(--krds-color-light-gray-60);
+  margin-bottom: var(--krds-gap-9); /* 40px */
+  white-space: pre-wrap;
+}
+
+/* 우측 슬라이더 (peek 효과) */
+.news-swiper-peek {
+  flex: 1;
+  overflow: hidden;       /* 핵심: 넘치는 부분을 잘라서 peek 효과 */
+  position: relative;
+}
+
+.news-swiper-peek .swiper {
+  overflow: visible;      /* 핵심: swiper 자체는 넘치게 */
+}
+
+.news-swiper-peek .slide-img {
+  width: 100%;
+  height: 360px;
+  background-size: cover;
+  background-position: center;
+  border-radius: var(--krds-radius-xlarge); /* 12px */
+}
+
+/* 다음 슬라이드 미리보기: 살짝 보이면서 opacity 낮게 */
+.news-swiper-peek .swiper-slide-next .slide-img {
+  opacity: 0.5;
+}
+
+/* 인디케이터: 이미지 하단 중앙 */
+.news-swiper-peek .swiper-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--krds-gap-4); /* 12px */
+  margin-top: var(--krds-gap-5); /* 16px */
+}
+
+/* 이전/다음 화살표: 원형 버튼 */
+.swiper-navigation {
+  display: flex;
+  flex-direction: column;
+  gap: var(--krds-gap-3); /* 8px */
+  flex-shrink: 0;
+}
+
+.swiper-navigation .swiper-button-prev,
+.swiper-navigation .swiper-button-next {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 1px solid var(--krds-color-light-gray-20);
+  background: var(--krds-color-light-gray-0);
+}
+
+/* 반응형: 모바일 */
+@media (max-width: 767px) {
+  .news-layout {
+    flex-direction: column;
+    gap: var(--krds-gap-7); /* 24px */
+    min-height: auto;
+  }
+
+  .news-text-area {
+    flex: none;
+    width: 100%;
+    order: 2;  /* 텍스트가 아래로 */
+  }
+
+  .news-swiper-peek {
+    width: 100%;
+    order: 1;  /* 이미지가 위로 */
+  }
+
+  .news-swiper-peek .slide-img {
+    height: 200px;
+  }
+
+  .swiper-navigation {
+    flex-direction: row;
+    justify-content: center;
+    order: 3;
+  }
+
+  .news-text-area .text-title {
+    font-size: var(--krds-mobile-font-size-heading-large); /* 24px */
+  }
+}
+```
+
+**JS 초기화 (peek + 텍스트 동기화):**
+```javascript
+const peekSwiper = new Swiper('.news-swiper-peek .swiper', {
+  slidesPerView: 1.15,       // 핵심: 다음 슬라이드 15% 노출
+  spaceBetween: 16,
+  loop: true,
+  speed: 400,
+  autoplay: {
+    delay: 4000,
+    disableOnInteraction: false,
+    pauseOnMouseEnter: true,
+  },
+  pagination: {
+    el: '.news-swiper-peek .swiper-pagination',
+    clickable: true,
+  },
+  navigation: {
+    nextEl: '.swiper-navigation .swiper-button-next',
+    prevEl: '.swiper-navigation .swiper-button-prev',
+  },
+  on: {
+    // 슬라이드 변경 시 좌측 텍스트 동기화
+    slideChange: function() {
+      const activeSlide = this.slides[this.activeIndex];
+      const title = activeSlide.dataset.title || '';
+      const cont = activeSlide.dataset.cont || '';
+      const link = activeSlide.dataset.link || '#';
+
+      const $title = document.getElementById('news-title');
+      const $cont = document.getElementById('news-cont');
+      const $link = document.getElementById('news-link');
+
+      // 페이드 아웃 → 텍스트 변경 → 페이드 인
+      const textArea = document.querySelector('.news-text-area');
+      textArea.style.opacity = '0';
+      textArea.style.transition = 'opacity 0.2s';
+
+      setTimeout(() => {
+        $title.textContent = title;
+        $cont.textContent = cont;
+        $link.href = link;
+        textArea.style.opacity = '1';
+      }, 200);
+    }
+  }
+});
+
+// 재생/멈춤
+const $play = document.querySelector('.swiper-button-play');
+const $stop = document.querySelector('.swiper-button-stop');
+$play.style.display = 'none';
+
+$play.addEventListener('click', () => {
+  peekSwiper.autoplay.start();
+  $stop.style.display = '';
+  $play.style.display = 'none';
+});
+
+$stop.addEventListener('click', () => {
+  peekSwiper.autoplay.stop();
+  $stop.style.display = 'none';
+  $play.style.display = '';
+});
+```
+
+**Peek 패턴 핵심 포인트:**
+- `slidesPerView: 1.15` — 다음 슬라이드가 15% 보임 (값을 조정하여 노출량 조절)
+- 텍스트가 슬라이더 **외부**에 있어서 슬라이드 전환과 독립적으로 페이드 애니메이션
+- `data-title`, `data-cont`, `data-link` 속성으로 슬라이드별 텍스트 데이터 저장
+- `slideChange` 이벤트에서 텍스트 영역을 fade out → 데이터 교체 → fade in
+- 다음 슬라이드에 `opacity: 0.5` 적용으로 현재 슬라이드와 시각적 구분
+- 이전/다음 화살표는 원형(48px, border-radius 50%)으로 슬라이더 우측 끝에 배치
+
+**Fade vs Peek 선택 기준:**
+
+| 상황 | 추천 |
+|------|------|
+| 이미지가 전면을 차지하고 텍스트가 이미지 위에 올라감 | **Fade** |
+| 텍스트와 이미지가 분리되고 "더 있다"는 암시가 필요 | **Peek** |
+| 슬라이드 수가 3개 이하 | **Fade** |
+| 슬라이드 수가 5개 이상 | **Peek** (탐색 유도) |
+| 모바일 우선 | **Fade** (화면 좁아 peek 효과 약함) |
+
 ---
 
 ## 달력 (Calendar)
