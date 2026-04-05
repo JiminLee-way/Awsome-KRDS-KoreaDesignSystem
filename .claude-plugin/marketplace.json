@@ -4,7 +4,7 @@
   "plugins": [
     {
       "name": "krds",
-      "source": ".",
+      "source": "./plugins/krds",
       "description": "KRDS 대한민국 범정부 UI/UX 디자인시스템 — 스타일, 컴포넌트 43종, 패턴 16종, 311개 체크리스트 검증, 저작권 관리",
       "version": "1.0.0"
     }
