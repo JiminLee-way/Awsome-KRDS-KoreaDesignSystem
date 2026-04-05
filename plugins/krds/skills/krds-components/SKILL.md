@@ -241,6 +241,48 @@ Read resources/js/component/ui-script.js
 </div>
 ```
 
+**추천 패턴 (실제 운영 사이트 수준 — Swiper 렌더링 후 완성된 형태):**
+
+Swiper.js가 초기화되면 `swiper-pagination` 내부에 bullet이 자동 생성됩니다. 아래는 Swiper가 렌더링한 후의 완성된 HTML 구조입니다. **직접 이 HTML을 작성하는 것이 아니라, Swiper JS가 자동 생성하는 결과물**임을 이해하세요. 다만 sr-only 텍스트는 섹션 맥락에 맞게 구체적으로 작성해야 합니다.
+
+```html
+<div class="swiper-indicator">
+  <!-- Swiper가 자동 생성하는 pagination bullets (직접 작성 X) -->
+  <div class="swiper-pagination swiper-pagination-clickable swiper-pagination-bullets swiper-pagination-horizontal">
+    <span class="swiper-pagination-bullet" tabindex="0" role="button" aria-label="Go to slide 1"></span>
+    <span class="swiper-pagination-bullet swiper-pagination-bullet-active" tabindex="0" role="button" aria-label="Go to slide 2" aria-current="true"></span>
+    <span class="swiper-pagination-bullet" tabindex="0" role="button" aria-label="Go to slide 3"></span>
+  </div>
+
+  <!-- 재생/멈춤 (직접 작성, 아이콘은 CSS가 렌더링) -->
+  <div class="swiper-controller">
+    <button type="button" class="swiper-button-play" style="display: none;">
+      <span class="sr-only">주요소식 슬라이드 재생</span>
+    </button>
+    <button type="button" class="swiper-button-stop">
+      <span class="sr-only">주요소식 슬라이드 멈춤</span>
+    </button>
+  </div>
+
+  <!-- 이전/다음 (직접 작성, 아이콘은 CSS가 렌더링) -->
+  <div class="swiper-navigation">
+    <button type="button" class="swiper-button-prev" tabindex="0" aria-label="Previous slide">
+      <span class="sr-only">이전 주요소식으로 이동</span>
+    </button>
+    <button type="button" class="swiper-button-next" tabindex="0" aria-label="Next slide">
+      <span class="sr-only">다음 주요소식으로 이동</span>
+    </button>
+  </div>
+</div>
+```
+
+**추천 패턴 핵심 포인트:**
+- `sr-only` 텍스트를 **섹션 맥락에 맞게 구체적으로** 작성 (예: "슬라이드 재생" → "주요소식 슬라이드 재생")
+- `swiper-pagination` 내부는 **비워두세요** — Swiper JS가 bullet을 자동 생성합니다
+- `swiper-button-play`는 초기 상태에서 `display: none` (autoplay가 기본 실행 중이므로)
+- `aria-label="Previous slide"`, `aria-label="Next slide"` 속성 추가
+- **`style="user-select: auto !important;"` 는 브라우저 DevTools에서 보이는 인라인 스타일이며, 직접 작성하지 않아도 됩니다**
+
 **잘못된 구현 (이렇게 하면 아이콘이 깨집니다):**
 ```html
 <!-- ❌ 텍스트 문자로 아이콘을 대체하면 안 됩니다 -->
