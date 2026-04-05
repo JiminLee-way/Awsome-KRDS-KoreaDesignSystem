@@ -4,6 +4,15 @@
 
 디지털 정부서비스의 설계, 구현, 검증을 지원하는 6개 스킬을 제공합니다.
 
+## Before & After
+
+| 현재 사이트 | Awesome-KRDS 적용 후 |
+|:---:|:---:|
+| ![Before](assets/before.png) | ![After](assets/after.png) |
+| 기존 정부 웹사이트 | Awesome-KRDS 스킬로 원샷 생성 |
+
+> **참고:** 우측 이미지는 Awesome-KRDS 스킬을 사용하여 Claude Code가 생성한 **데모 화면**이며, 실제 운영 중인 사이트가 아닙니다.
+
 ## 설치
 
 Claude Code에서:
