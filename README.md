@@ -9,8 +9,8 @@
 Claude Code에서:
 
 ```
-/plugin marketplace add JiminLee-way/Awsome-KRDS-KoreaDesignSystem-
-/plugin install krds@Awsome-KRDS-KoreaDesignSystem-
+/plugin marketplace add JiminLee-way/Awsome-KRDS-KoreaDesignSystem
+/plugin install krds@Awsome-KRDS-KoreaDesignSystem
 ```
 
 ## 스킬 목록
